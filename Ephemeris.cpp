@@ -18,6 +18,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
+
 #if ARDUINO
 #include <Arduino.h>
 #endif
@@ -866,6 +868,10 @@ SolarSystemObject Ephemeris::solarSystemObjectAtDateAndTime(SolarSystemObjectInd
     {
         solarSystemObject.equaCoordinates = equatorialCoordinatesForPlanetAtJD(solarSystemObjectIndex, jd, &solarSystemObject.distance);
     }
+
+    // HeliocentricCoordinates
+
+    solarSystemObject.helioCoordinates = heliocentricCoordinatesForPlanetAtJD(solarSystemObjectIndex, jd, &solarSystemObject.distance);
     
     // Apparent diameter at a distance of 1 astronomical unit.
     FLOAT diameter = 0;
@@ -1096,6 +1102,43 @@ void Ephemeris::setLocationOnEarth(FLOAT latDegrees, FLOAT latMinutes, FLOAT lat
     latitudeOnEarth  = DEGREES_MINUTES_SECONDS_TO_DECIMAL_DEGREES(latDegrees,latMinutes,latSeconds);
     longitudeOnEarth = DEGREES_MINUTES_SECONDS_TO_DECIMAL_DEGREES(lonDegrees,lonMinutes,lonSeconds);
 }
+
+#if !DISABLE_PLANETS
+HeliocentricCoordinates  Ephemeris::heliocentricCoordinatesForPlanetAtJD(SolarSystemObjectIndex solarSystemObjectIndex, JulianDay jd, FLOAT *distance)
+{
+    
+    FLOAT T      = T_WITH_JD(jd.day,jd.time);
+    FLOAT lastT  = 0;
+    FLOAT TLight = 0;
+    HeliocentricCoordinates hcPlanet;
+    RectangularCoordinates  rectPlanet;
+    
+    JulianDay jd2;
+    jd2.day  = jd.day;
+    jd2.time = jd.time;
+    
+    FLOAT x2=0,y2=0,z2=0;
+    
+    FLOAT dist = 0;
+    
+    // Iterate for good precision according to light speed delay
+    while (T != lastT)
+    {
+        lastT = T;
+        
+        FLOAT jd2 = (jd.day+jd.time) - TLight;
+        T = T_WITH_JD(jd2,0);
+        
+        hcPlanet   = Ephemeris::heliocentricCoordinatesForPlanetAndT(solarSystemObjectIndex, T);
+        if( isnan(hcPlanet.radius)  )
+        {
+            break;
+        }
+    }
+
+    return hcPlanet;
+}
+#endif
 
 #if !DISABLE_PLANETS
 EquatorialCoordinates  Ephemeris::equatorialCoordinatesForPlanetAtJD(SolarSystemObjectIndex solarSystemObjectIndex, JulianDay jd, FLOAT *distance)

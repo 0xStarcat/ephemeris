@@ -40,19 +40,32 @@ void printEquatorialCoordinates(EquatorialCoordinates coord)
   return;
 }
 
+struct TimeObject
+{
+  int Year;
+  int Month; // 1 - 12
+  int Day;
+  int Hour;
+  int Minute;
+  int Second;
+};
+
 int main()
 {
-  Ephemeris::setLocationOnEarth(48, 50, 11, -2, 20, 14);
-  int day = 10, month = 4, year = 2014, hour = 19, minute = 21, second = 0;
-  SolarSystemObject planet = Ephemeris::solarSystemObjectAtDateAndTime(Mars, day, month, year, hour, minute, second);
 
-  EquatorialCoordinates polarStarEqCoord;
-  polarStarEqCoord.ra = Ephemeris::hoursMinutesSecondsToFloatingHours(2, 31, 49);       // 2h31m49s
-  polarStarEqCoord.dec = Ephemeris::degreesMinutesSecondsToFloatingDegrees(89, 15, 51); // +89° 15′ 51″
+  TimeObject t;
+  t.Year = 2019;
+  t.Month = 12;
+  t.Day = 25;
+  t.Hour = 22;
+  t.Minute = 0;
+  t.Second = 0;
 
-  std::cout << "Mars: " << std::endl;
+  Ephemeris::setLocationOnEarth(40.71305, -74.66034); // NYC
 
-  printEquatorialCoordinates(polarStarEqCoord);
+  SolarSystemObject planet = Ephemeris::solarSystemObjectAtDateAndTime(Mars, t.Day, t.Month, t.Year, t.Hour, t.Minute, t.Second);
+
+  std::cout << std::to_string(planet.helioCoordinates.lon) << "\n";
 
   return 0;
 }
