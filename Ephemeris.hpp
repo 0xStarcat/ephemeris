@@ -47,9 +47,10 @@
 #define ATAND(value) (atan((value)) * 57.2957795131);
 
 // Limit range
-#define LIMIT_DEGREES_TO_360(value) (value) >= 0 ? ((value) - (long)((value)*0.0027777778) * 360) : (((value) - (long)((value)*0.0027777778) * 360) + 360)
-#define LIMIT_HOURS_TO_24(value) (value) >= 0 ? ((value) - (long)((value)*0.0416666667) * 24) : ((value) + 24)
-#define LIMIT_DEC_TO_90(value) (value)
+#define LIMIT_DEGREES_TO_360(value) (value) >= 0 ? ((value) - (long)((value)*0.0027777778) * 360) : (((value) - (long)((value)*0.0027777778) * 360) + 360);
+#define LIMIT_DEGREES_TO_180(value) (value) >= 0 ? ((value) - (long)((value)*0.0027777778) * 180) : (((value) - (long)((value)*0.0027777778) * 180) + 180);
+#define LIMIT_HOURS_TO_24(value) (value) >= 0 ? ((value) - (long)((value)*0.0416666667) * 24) : ((value) + 24);
+#define LIMIT_DEC_TO_90(value) (value);
 
 // Convert degrees
 #define DEGREES_TO_RADIANS(value) ((value)*0.0174532925)

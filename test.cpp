@@ -56,9 +56,9 @@ int main()
   TimeObject t;
   t.Year = 2019;
   t.Month = 12;
-  t.Day = 25;
-  t.Hour = 22;
-  t.Minute = 0;
+  t.Day = 15;
+  t.Hour = 12;
+  t.Minute = 00;
   t.Second = 0;
 
   // Ephemeris::setLocationOnEarth(40.71305, -74.66034); // NYC -- not needed for heliocentric coords

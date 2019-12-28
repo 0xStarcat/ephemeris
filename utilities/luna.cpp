@@ -60,9 +60,9 @@ HeliocentricCoordinates Ephemeris::heliocentricCoordinatesForEarthsMoon(FLOAT T)
   // Eccentricity of earth's orbit around sun
   FLOAT E = LIMIT_DEGREES_TO_360(1 - (0.002516 * T) - (0.0000074 * T2));
 
-  FLOAT SUM_LON = Ephemeris::sumLunarLongitudeTerms(E, L1, D, M, M1, F, A1, A2) / 1000000;
-  FLOAT SUM_DIST = Ephemeris::sumLunarDistanceTerms(E, D, M, M1, F) / 1000;
-  FLOAT SUM_LAT = Ephemeris::sumLunarLatitudeTerms(E, L1, D, M, M1, F, A1, A3) / 1000000;
+  FLOAT SUM_LON = Ephemeris::sumLunarLongitudeTerms(E, L1, D, M, M1, F, A1, A2);
+  FLOAT SUM_DIST = Ephemeris::sumLunarDistanceTerms(E, D, M, M1, F);
+  FLOAT SUM_LAT = Ephemeris::sumLunarLatitudeTerms(E, L1, D, M, M1, F, A1, A3);
 
   // std::cout << std::to_string(SUM_LON) << std::endl;
   // std::cout << std::to_string(SUM_DIST) << std::endl;
@@ -70,10 +70,10 @@ HeliocentricCoordinates Ephemeris::heliocentricCoordinatesForEarthsMoon(FLOAT T)
 
   HeliocentricCoordinates coords;
 
-  FLOAT nutationLon = 0.00461;                                               // nutation in degrees
-  coords.lon = LIMIT_DEGREES_TO_360(L1 + (SUM_LON / 1000000) + nutationLon); // degrees
-  coords.lat = SUM_LAT / 1000000;                                            // degrees
-  coords.earthDistanceKm = 385000.56 + (SUM_DIST / 1000);                    // km
+  FLOAT nutationLon = 0.00461;                                                 // nutation in degrees
+  coords.lon = LIMIT_DEGREES_TO_360((L1 + (SUM_LON / 1000000)) + nutationLon); // degrees
+  coords.lat = SUM_LAT / 1000000;                                              // degrees
+  coords.earthDistanceKm = 385000.56 + (SUM_DIST / 1000);                      // km
 
   // std::cout << std::to_string(coords.lon) << std::endl;
   // std::cout << std::to_string(coords.apparentLon) << std::endl;
@@ -101,7 +101,7 @@ FLOAT Ephemeris::sumLunarLongitudeTerms(FLOAT E, FLOAT L1, FLOAT D, FLOAT M, FLO
 #endif
 
     FLOAT workingE = term.multipleM ? pow(E, abs(term.multipleM)) : 1;
-    sum += term.coefficient * workingE * sin((D * term.multipleD) + (M * term.multipleM) + (M1 * term.multipleM1) + (F * term.multipleF));
+    sum += term.coefficient * workingE * SIND((D * term.multipleD) + (M * term.multipleM) + (M1 * term.multipleM1) + (F * term.multipleF));
   };
 
   sum += 3958 * SIND(A1) + 1962 * SIND(L1 - F) + 318 * SIND(A2);
@@ -126,7 +126,7 @@ FLOAT Ephemeris::sumLunarDistanceTerms(FLOAT E, FLOAT D, FLOAT M, FLOAT M1, FLOA
 #endif
 
     FLOAT workingE = term.multipleM ? pow(E, abs(term.multipleM)) : 1;
-    sum += term.coefficient * workingE * sin((D * term.multipleD) + (M * term.multipleM) + (M1 * term.multipleM1) + (F * term.multipleF));
+    sum += term.coefficient * workingE * SIND((D * term.multipleD) + (M * term.multipleM) + (M1 * term.multipleM1) + (F * term.multipleF));
   };
 
   return sum;
@@ -150,10 +150,10 @@ FLOAT Ephemeris::sumLunarLatitudeTerms(FLOAT E, FLOAT L1, FLOAT D, FLOAT M, FLOA
 #endif
 
     FLOAT workingE = term.multipleM ? pow(E, abs(term.multipleM)) : 1;
-    sum += term.coefficient * workingE * sin((D * term.multipleD) + (M * term.multipleM) + (M1 * term.multipleM1) + (F * term.multipleF));
+    sum += term.coefficient * workingE * SIND((D * term.multipleD) + (M * term.multipleM) + (M1 * term.multipleM1) + (F * term.multipleF));
   };
 
-  sum += -2235 * SIND(L1) + 382 * SIND(A3) + 175 * SIND(A1 - F) + 175 * SIND(A1 + F) + 127 * SIND(L1 - M1) - 115 * sin(L1 + M1);
+  sum += -2235 * SIND(L1) + 382 * SIND(A3) + 175 * SIND(A1 - F) + 175 * SIND(A1 + F) + 127 * SIND(L1 - M1) - 115 * SIND(L1 + M1);
   return sum;
 };
 
@@ -175,18 +175,18 @@ FLOAT Ephemeris::getLunarIllumination(unsigned int day, unsigned int month, unsi
   /* 
     Astronomical Algorithims (2015) by Jean Meeus pg 345
 
-    // 48.2 -- w/ earth lat/lng
+    48.2 -- w/ earth lat/lng
     cos(geocentricElongation) = (sin(sun.declination) * sin(moon.declination))
                               + (cos(sun.declination) * cos(moon.declination) * cos(sun.rightAscension - moon.rightAscension))
 
-    // 48.2 -- alt
+    48.2 -- alt
     cos(geocentricElongation) = cos(moon.geocentricLatitude) * cos(moon.geocentricLongitude - sun.geocentricLongitude)
 
-    // 48.3
+    48.3
     tan(phaseAngle) = (sun.earthDistanceKm * sin(geocentricElongation))
                     / (moon.earthDistanceKm - sun.earthDistanceKm * cos(geocentricElongation))
                                 
-    // 48.1
+    48.1
     illuminatedFraction = (1 + cos(phaseAngle))
                         / 2
 
@@ -208,9 +208,13 @@ FLOAT Ephemeris::getLunarIllumination(unsigned int day, unsigned int month, unsi
       COSD(moonHCoords.lat) *
       COSD(moonHCoords.lon - sunHCoords.lon));
 
+  geocentricElongation = LIMIT_DEGREES_TO_180(geocentricElongation);
+
   FLOAT phaseAngle = ATAND(
       (sunHCoords.earthDistanceKm * SIND(geocentricElongation)) /
       (moonHCoords.earthDistanceKm - (sunHCoords.earthDistanceKm * COSD(geocentricElongation))));
+
+  phaseAngle = LIMIT_DEGREES_TO_180(phaseAngle);
 
   FLOAT illuminatedFraction = (1 + COSD(phaseAngle)) / 2;
 
