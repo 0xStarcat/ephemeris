@@ -56,16 +56,20 @@ int main()
   TimeObject t;
   t.Year = 2019;
   t.Month = 12;
-  t.Day = 25;
+  t.Day = 30;
   t.Hour = 22;
   t.Minute = 0;
   t.Second = 0;
 
-  Ephemeris::setLocationOnEarth(40.71305, -74.66034); // NYC
+  // Ephemeris::setLocationOnEarth(40.71305, -74.66034); // NYC -- not needed for heliocentric coords
 
-  SolarSystemObject planet = Ephemeris::solarSystemObjectAtDateAndTime(Mars, t.Day, t.Month, t.Year, t.Hour, t.Minute, t.Second);
+  LunarPhaseMeasures lpm = Ephemeris::getLunarPhaseMeasures(t.Day, t.Month, t.Year, t.Hour, t.Minute, t.Second);
 
-  std::cout << std::to_string(planet.helioCoordinates.lon) << "\n";
+  std::cout << "\n******\n";
+  std::cout << "IF: " << std::to_string(lpm.illuminatedFraction) << "\n";
+  std::cout << "PD: " << std::to_string(lpm.phaseDecimal) << "\n";
+
+  std::cout << std::to_string(moonLongitudeELP[0].coefficient);
 
   return 0;
 }

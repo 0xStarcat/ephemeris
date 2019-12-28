@@ -27,46 +27,7 @@
 #include <math.h>
 
 #include "Ephemeris.hpp"
-
-
-#ifndef PI
-#define PI 3.1415926535
-#endif
-
-// Trigonometry using degrees
-#define SIND(value)   sin((value)*0.0174532925)
-#define COSD(value)   cos((value)*0.0174532925)
-#define TAND(value)   tan((value)*0.0174532925)
-
-#define ACOSD(value)  (acos((value))*57.2957795131);
-#define ATAND(value)  (atan((value))*57.2957795131);
-
-// Limit range
-#define LIMIT_DEGREES_TO_360(value) (value) >= 0 ? ((value)-(long)((value)*0.0027777778)*360) : (((value)-(long)((value)*0.0027777778)*360)+360)
-#define LIMIT_HOURS_TO_24(value) (value) >= 0 ? ((value)-(long)((value)*0.0416666667)*24) : ((value)+24)
-#define LIMIT_DEC_TO_90(value) (value) 
-
-// Convert degrees
-#define DEGREES_TO_RADIANS(value) ((value)*0.0174532925)
-#define DEGREES_TO_HOURS(value) ((value)*0.0666666667)
-#define DEGREES_MINUTES_SECONDES_TO_SECONDS(deg,min,sec) ((FLOAT)(deg)*3600+(FLOAT)(min)*60+(FLOAT)sec)
-#define DEGREES_MINUTES_SECONDS_TO_DECIMAL_DEGREES(deg,min,sec) (deg) >= 0 ? ((FLOAT)(deg)+(FLOAT)(min)*0.0166666667+(FLOAT)(sec)*0.0002777778) : ((FLOAT)(deg)-(FLOAT)(min)*0.0166666667-(FLOAT)(sec)*0.0002777778)
-
-// Convert radians
-#define RADIANS_TO_DEGREES(value) ((value)*57.2957795131)
-#define RADIANS_TO_HOURS(value) ((value)*3.81971863)
-
-// Convert hours
-#define HOURS_TO_RADIANS(value) ((value)*0.261799388)
-#define HOURS_MINUTES_SECONDS_TO_SECONDS(hour,min,sec) ((FLOAT)(hour)*3600+(FLOAT)(min)*60+(FLOAT)sec)
-#define HOURS_MINUTES_SECONDS_TO_DECIMAL_HOURS(hour,min,sec) ((FLOAT)(hour)+(FLOAT)(min)*0.0166666667+(FLOAT)(sec)*0.0002777778)
-#define HOURS_TO_DEGREES(value) ((value)*15)
-
-// Convert seconds
-#define SECONDS_TO_DECIMAL_DEGREES(value) ((FLOAT)(value)*0.0002777778)
-#define SECONDS_TO_DECIMAL_HOURS(value) ((FLOAT)(value)*0.0002777778)
-
-#define T_WITH_JD(day,time)((day-2451545.0+time)/36525)
+#include "utilities/luna.cpp"
 
 // Observer's coordinates on Earth
 static FLOAT latitudeOnEarth      = NAN;
@@ -459,6 +420,7 @@ EquatorialCoordinates  Ephemeris::equatorialCoordinatesForEarthsMoonAtJD(JulianD
     
     eqCoord.ra += detlaRa/15.f;
     eqCoord.dec = detlaDec;
+    eqCoord.earthDistance = dist / 6.68459e-9; // convert AU to KM
 
     return eqCoord;
 }
@@ -515,8 +477,8 @@ EquatorialCoordinates  Ephemeris::equatorialCoordinatesForSunAtJD(JulianDay jd, 
     
     // R
     FLOAT dist = (1.000001018*(1-e*e))/(1+e*COSD(v));
-    if( distance ) *distance = dist;
-
+    if( distance ) *distance *6.68459e-9;
+  
     FLOAT omega = 125.04 - 1934.136*T;
     
     FLOAT lambda = O - 0.00569 - 0.00478 * SIND(omega);
@@ -564,7 +526,8 @@ EquatorialCoordinates  Ephemeris::equatorialCoordinatesForSunAtJD(JulianDay jd, 
     
     eqCoord.ra += detlaRa/15.f;
     eqCoord.dec = detlaDec;
-    
+    eqCoord.earthDistance = dist / 6.68459e-9; // convert AU to KM;
+
     return eqCoord;
 }
 #endif
@@ -1111,7 +1074,6 @@ HeliocentricCoordinates  Ephemeris::heliocentricCoordinatesForPlanetAtJD(SolarSy
     FLOAT lastT  = 0;
     FLOAT TLight = 0;
     HeliocentricCoordinates hcPlanet;
-    RectangularCoordinates  rectPlanet;
     
     JulianDay jd2;
     jd2.day  = jd.day;
@@ -1269,7 +1231,8 @@ EquatorialCoordinates  Ephemeris::equatorialCoordinatesForPlanetAtJD(SolarSystem
     
     eqCoord.ra += detlaRa/15.f;
     eqCoord.dec = detlaDec;
-    
+    eqCoord.earthDistance = dist / 6.68459e-9; // convert AU to KM;
+   
     return eqCoord;
 }
 #endif

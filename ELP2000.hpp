@@ -17,13 +17,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <stdint.h>
 #ifndef ELP2000_h
 #define ELP2000_h
 
 #if ARDUINO
 #define CONST const PROGMEM
 #else
+#include <stdint.h>
 #define CONST const
 #endif
 
