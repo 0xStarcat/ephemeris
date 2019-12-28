@@ -163,7 +163,7 @@ LunarPhaseMeasures Ephemeris::getLunarPhaseMeasures(unsigned int day, unsigned i
   LunarPhaseMeasures lunarPhaseMeasures;
 
   lunarPhaseMeasures.illuminatedFraction = Ephemeris::getLunarIlluminationLowerAccuracy(day, month, year, hours, minutes, seconds);
-  lunarPhaseMeasures.phaseDecimal = Ephemeris::getLunarPhaseDecimal(day, month, year, hours, minutes, seconds);
+  lunarPhaseMeasures.phaseDecimal = Ephemeris::getLunarPhaseDecimalLowerAccuracy(day, month, year, hours, minutes, seconds);
 
   return lunarPhaseMeasures;
 };
@@ -227,6 +227,7 @@ FLOAT Ephemeris::getLunarIlluminationLowerAccuracy(unsigned int day, unsigned in
     Astronomical Algorithims (2015) by Jean Meeus pg 345
     
     Lower accuracy formula on pg 346 figure 48.4
+    Does not require more expensive lunar position calculations
   */
 
   JulianDay jd = Calendar::julianDayForDateAndTime(day, month, year, hours, minutes, seconds);
@@ -281,9 +282,58 @@ FLOAT Ephemeris::getLunarIlluminationLowerAccuracy(unsigned int day, unsigned in
   return illuminatedFraction;
 }
 
-FLOAT Ephemeris::getLunarPhaseDecimal(unsigned int day, unsigned int month, unsigned int year,
-                                      unsigned int hours, unsigned int minutes, unsigned int seconds)
+FLOAT Ephemeris::getLunarPhaseDecimalLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
+                                                   unsigned int hours, unsigned int minutes, unsigned int seconds)
 {
-  return 0.75;
+  /*
+    Astronomical Algorithims (2015) - Jean Meeus - figure 49.2
+    phaseDecimal(k) = (year - 2000) * 12.3685
+  */
+
+  JulianDay jd = Calendar::julianDayForDateAndTime(day, month, year, hours, minutes, seconds);
+  FLOAT T = T_WITH_JD(jd.day, jd.time);
+  FLOAT T2 = T * T;
+  FLOAT T3 = T2 * T;
+  FLOAT T4 = T3 * T;
+
+  int monthDays[12] = {
+      31, // JAN
+      28, // FEB
+      31, // MAR
+      30, // APR
+      31, // MAY
+      30, // JUN
+      31, // JUL
+      31, // AUG
+      30, // SEP
+      31, // OCT
+      30, // NOV
+      31, // DEC
+  };
+
+  FLOAT secondsPerYear = year % 4 == 0 ? 31622400 : 31536000; // 366 day leap year : 365 day year
+  int daysElapsedThisYear = 0;
+
+  for (int i = 0; i < (month - 1); i++)
+  {
+    if (year % 4 == 0 && i == 1) // leap year february add 1 day
+    {
+      daysElapsedThisYear += monthDays[i] + 1;
+    }
+    else
+    {
+      daysElapsedThisYear += monthDays[i];
+    }
+  };
+
+  FLOAT secondsElapsedThisYear = ((daysElapsedThisYear + (day - 1)) * 24 * 60 * 60) + (hours * 60 * 60) + (minutes * 60) + seconds;
+  FLOAT yearCalculation = year + (secondsElapsedThisYear / secondsPerYear);
+
+  // Subtract 2000.0158 to sync to new moon on Jan 6th, 2000 18:13 UTC (rather than by 2000 as in fig 49.1);
+  double phaseDecimal = (yearCalculation - 2000.0158) * 12.3685;
+
+  phaseDecimal = phaseDecimal - floor(phaseDecimal);
+
+  return phaseDecimal;
 };
 #endif

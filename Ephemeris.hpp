@@ -294,11 +294,12 @@ public:
   static FLOAT getLunarIllumination(unsigned int day, unsigned int month, unsigned int year,
                                     unsigned int hours, unsigned int minutes, unsigned int seconds);
 
-  static FLOAT getLunarPhaseDecimal(unsigned int day, unsigned int month, unsigned int year,
-                                    unsigned int hours, unsigned int minutes, unsigned int seconds);
-
   static FLOAT getLunarIlluminationLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
                                                  unsigned int hours, unsigned int minutes, unsigned int seconds);
+
+  static FLOAT getLunarPhaseDecimalLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
+                                                 unsigned int hours, unsigned int minutes, unsigned int seconds);
+
   static LunarPhaseMeasures getLunarPhaseMeasures(unsigned int day, unsigned int month, unsigned int year,
                                                   unsigned int hours, unsigned int minutes, unsigned int seconds);
 
