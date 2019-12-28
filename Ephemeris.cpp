@@ -28,6 +28,7 @@
 
 #include "Ephemeris.hpp"
 #include "utilities/luna.cpp"
+#include "utilities/sun.cpp"
 
 // Observer's coordinates on Earth
 static FLOAT latitudeOnEarth      = NAN;
@@ -420,7 +421,7 @@ EquatorialCoordinates  Ephemeris::equatorialCoordinatesForEarthsMoonAtJD(JulianD
     
     eqCoord.ra += detlaRa/15.f;
     eqCoord.dec = detlaDec;
-    eqCoord.earthDistance = dist / 6.68459e-9; // convert AU to KM
+    eqCoord.earthDistanceKm = dist / 6.68459e-9; // convert AU to KM
 
     return eqCoord;
 }
@@ -477,6 +478,7 @@ EquatorialCoordinates  Ephemeris::equatorialCoordinatesForSunAtJD(JulianDay jd, 
     
     // R
     FLOAT dist = (1.000001018*(1-e*e))/(1+e*COSD(v));
+    
     if( distance ) *distance *6.68459e-9;
   
     FLOAT omega = 125.04 - 1934.136*T;
@@ -526,7 +528,7 @@ EquatorialCoordinates  Ephemeris::equatorialCoordinatesForSunAtJD(JulianDay jd, 
     
     eqCoord.ra += detlaRa/15.f;
     eqCoord.dec = detlaDec;
-    eqCoord.earthDistance = dist / 6.68459e-9; // convert AU to KM;
+    eqCoord.earthDistanceKm = dist / 6.68459e-9; // convert AU to KM;
 
     return eqCoord;
 }
@@ -1231,7 +1233,7 @@ EquatorialCoordinates  Ephemeris::equatorialCoordinatesForPlanetAtJD(SolarSystem
     
     eqCoord.ra += detlaRa/15.f;
     eqCoord.dec = detlaDec;
-    eqCoord.earthDistance = dist / 6.68459e-9; // convert AU to KM;
+    eqCoord.earthDistanceKm = dist / 6.68459e-9; // convert AU to KM;
    
     return eqCoord;
 }

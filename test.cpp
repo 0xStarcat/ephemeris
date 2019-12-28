@@ -54,11 +54,11 @@ int main()
 {
 
   TimeObject t;
-  t.Year = 2020;
-  t.Month = 9;
-  t.Day = 17;
-  t.Hour = 20;
-  t.Minute = 13;
+  t.Year = 2019;
+  t.Month = 12;
+  t.Day = 25;
+  t.Hour = 22;
+  t.Minute = 0;
   t.Second = 0;
 
   // Ephemeris::setLocationOnEarth(40.71305, -74.66034); // NYC -- not needed for heliocentric coords

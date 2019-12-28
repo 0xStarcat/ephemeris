@@ -73,12 +73,12 @@ HeliocentricCoordinates Ephemeris::heliocentricCoordinatesForEarthsMoon(FLOAT T)
   FLOAT nutationLon = 0.00461;                                               // nutation in degrees
   coords.lon = LIMIT_DEGREES_TO_360(L1 + (SUM_LON / 1000000) + nutationLon); // degrees
   coords.lat = SUM_LAT / 1000000;                                            // degrees
-  coords.earthDistance = 385000.56 + (SUM_DIST / 1000);                      // km
+  coords.earthDistanceKm = 385000.56 + (SUM_DIST / 1000);                    // km
 
   // std::cout << std::to_string(coords.lon) << std::endl;
   // std::cout << std::to_string(coords.apparentLon) << std::endl;
   // std::cout << std::to_string(coords.lat) << std::endl;
-  // std::cout << std::to_string(coords.earthDistance) << std::endl;
+  // std::cout << std::to_string(coords.earthDistanceKm) << std::endl;
 
   return coords;
 };
@@ -162,7 +162,7 @@ LunarPhaseMeasures Ephemeris::getLunarPhaseMeasures(unsigned int day, unsigned i
 {
   LunarPhaseMeasures lunarPhaseMeasures;
 
-  lunarPhaseMeasures.illuminatedFraction = Ephemeris::getLunarIlluminationLowerAccuracy(day, month, year, hours, minutes, seconds);
+  lunarPhaseMeasures.illuminatedFraction = Ephemeris::getLunarIllumination(day, month, year, hours, minutes, seconds);
   lunarPhaseMeasures.phaseDecimal = Ephemeris::getLunarPhaseDecimalLowerAccuracy(day, month, year, hours, minutes, seconds);
 
   return lunarPhaseMeasures;
@@ -183,8 +183,8 @@ FLOAT Ephemeris::getLunarIllumination(unsigned int day, unsigned int month, unsi
     cos(geocentricElongation) = cos(moon.geocentricLatitude) * cos(moon.geocentricLongitude - sun.geocentricLongitude)
 
     // 48.3
-    tan(phaseAngle) = (sun.earthDistance * sin(geocentricElongation))
-                    / (moon.earthDistance - sun.earthDistance * cos(geocentricElongation))
+    tan(phaseAngle) = (sun.earthDistanceKm * sin(geocentricElongation))
+                    / (moon.earthDistanceKm - sun.earthDistanceKm * cos(geocentricElongation))
                                 
     // 48.1
     illuminatedFraction = (1 + cos(phaseAngle))
@@ -195,9 +195,7 @@ FLOAT Ephemeris::getLunarIllumination(unsigned int day, unsigned int month, unsi
   JulianDay jd = Calendar::julianDayForDateAndTime(day, month, year, hours, minutes, seconds);
   FLOAT T = T_WITH_JD(jd.day, jd.time);
 
-  EquatorialCoordinates moonECoords = Ephemeris::equatorialCoordinatesForEarthsMoonAtJD(jd, NULL);
-  EquatorialCoordinates sunECoords = Ephemeris::equatorialCoordinatesForSunAtJD(jd, NULL);
-
+  HeliocentricCoordinates sunHCoords = Ephemeris::heliocentricCoordinatesForSun(T);
   HeliocentricCoordinates moonHCoords = Ephemeris::heliocentricCoordinatesForEarthsMoon(T);
 
   // 48.2 -- w earth lat/lng
@@ -208,11 +206,11 @@ FLOAT Ephemeris::getLunarIllumination(unsigned int day, unsigned int month, unsi
   // 48.2 -- alt
   FLOAT geocentricElongation = ACOSD(
       COSD(moonHCoords.lat) *
-      COSD(moonHCoords.lon - 273.80691895933455));
+      COSD(moonHCoords.lon - sunHCoords.lon));
 
   FLOAT phaseAngle = ATAND(
-      (sunECoords.earthDistance * SIND(geocentricElongation)) /
-      (moonECoords.earthDistance - (sunECoords.earthDistance * COSD(geocentricElongation))));
+      (sunHCoords.earthDistanceKm * SIND(geocentricElongation)) /
+      (moonHCoords.earthDistanceKm - (sunHCoords.earthDistanceKm * COSD(geocentricElongation))));
 
   FLOAT illuminatedFraction = (1 + COSD(phaseAngle)) / 2;
 
@@ -326,12 +324,15 @@ FLOAT Ephemeris::getLunarPhaseDecimalLowerAccuracy(unsigned int day, unsigned in
     }
   };
 
-  FLOAT secondsElapsedThisYear = ((daysElapsedThisYear + (day - 1)) * 24 * 60 * 60) + (hours * 60 * 60) + (minutes * 60) + seconds;
-  FLOAT yearCalculation = year + (secondsElapsedThisYear / secondsPerYear);
+  double secondsElapsedThisYear = ((daysElapsedThisYear + (day - 1)) * 24 * 60 * 60) + (hours * 60 * 60) + (minutes * 60) + seconds;
+
+  // calculate year in decimal format (ex: 3/31/2010 ~= 2010.25)
+  double yearCalculation = year + (secondsElapsedThisYear / secondsPerYear);
 
   // Subtract 2000.0158 to sync to new moon on Jan 6th, 2000 18:13 UTC (rather than by 2000 as in fig 49.1);
   double phaseDecimal = (yearCalculation - 2000.0158) * 12.3685;
 
+  // Convert value to 0 - 1 decimal
   phaseDecimal = phaseDecimal - floor(phaseDecimal);
 
   return phaseDecimal;

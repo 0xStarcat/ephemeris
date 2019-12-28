@@ -83,7 +83,7 @@ struct EquatorialCoordinates
   FLOAT dec;
 
   /* ! Floating value for distance in KM to earth */
-  FLOAT earthDistance;
+  FLOAT earthDistanceKm;
 };
 
 /*! This structure describes horizontal coordinates. */
@@ -109,7 +109,7 @@ struct HeliocentricCoordinates
   FLOAT radius;
 
   /* ! distance in KM to the earth */
-  FLOAT earthDistance;
+  FLOAT earthDistanceKm;
 };
 
 /*! This structure describes geocentric coordinates. */
@@ -134,7 +134,7 @@ struct RectangularCoordinates
 struct LunarPhaseMeasures
 {
   FLOAT illuminatedFraction; /* 0 - 1 the % of the moon that's illuminated */
-  FLOAT phaseDecimal;        /* 0 - 1 the current phase of the moon. 0 = new, 0.25 = first quarter, 0.5 = full, 0.75 = last quarter */
+  double phaseDecimal;       /* 0 - 1 the current phase of the moon. 0 = new, 0.25 = first quarter, 0.5 = full, 0.75 = last quarter */
 };
 
 /*! This structure describes available solar system objects for computation of ephemerides. */
@@ -318,10 +318,14 @@ private:
      *  Reference: Chapter 7, page 35: Temps sidéral à Greenwich. */
   static FLOAT meanGreenwichSiderealTimeAtJD(JulianDay jd);
 
+  /* ! Compute sun's heliocentric coordnates.
+    * Reference: Astrological Algorithims (2015) ch 25
+  */
+  static HeliocentricCoordinates heliocentricCoordinatesForSun(FLOAT T);
+
   /* ! Compute earthMoon's heliocentric coordnates.
     * Reference: Astrological Algorithims (2015) ch 47
   */
-
   static HeliocentricCoordinates heliocentricCoordinatesForEarthsMoon(FLOAT T);
 
   /*! Compute heliocentric coordinates.
