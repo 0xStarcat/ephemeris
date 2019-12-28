@@ -292,14 +292,15 @@ public:
                                                                          unsigned int day, unsigned int month, unsigned int year,
                                                                          unsigned int hours, unsigned int minutes, unsigned int seconds);
 
-  static FLOAT getLunarIllumination(unsigned int day, unsigned int month, unsigned int year,
-                                    unsigned int hours, unsigned int minutes, unsigned int seconds);
+  static FLOAT getLunarIllumination(HeliocentricCoordinates moonCoords, HeliocentricCoordinates sunCoords);
 
   static FLOAT getLunarIlluminationLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
                                                  unsigned int hours, unsigned int minutes, unsigned int seconds);
 
-  static FLOAT getLunarPhaseDecimalLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
-                                                 unsigned int hours, unsigned int minutes, unsigned int seconds);
+  static double getLunarPhaseDecimal(HeliocentricCoordinates moonCoords, HeliocentricCoordinates sunCoords);
+
+  static double getLunarPhaseDecimalLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
+                                                  unsigned int hours, unsigned int minutes, unsigned int seconds);
 
   static LunarPhaseMeasures getLunarPhaseMeasures(unsigned int day, unsigned int month, unsigned int year,
                                                   unsigned int hours, unsigned int minutes, unsigned int seconds);

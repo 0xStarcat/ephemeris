@@ -162,14 +162,21 @@ LunarPhaseMeasures Ephemeris::getLunarPhaseMeasures(unsigned int day, unsigned i
 {
   LunarPhaseMeasures lunarPhaseMeasures;
 
-  lunarPhaseMeasures.illuminatedFraction = Ephemeris::getLunarIllumination(day, month, year, hours, minutes, seconds);
-  lunarPhaseMeasures.phaseDecimal = Ephemeris::getLunarPhaseDecimalLowerAccuracy(day, month, year, hours, minutes, seconds);
+  JulianDay jd = Calendar::julianDayForDateAndTime(day, month, year, hours, minutes, seconds);
+  FLOAT T = T_WITH_JD(jd.day, jd.time);
+
+  HeliocentricCoordinates moonCoords = Ephemeris::heliocentricCoordinatesForEarthsMoon(T);
+  HeliocentricCoordinates sunCoords = Ephemeris::heliocentricCoordinatesForSun(T);
+
+  lunarPhaseMeasures.illuminatedFraction = Ephemeris::getLunarIllumination(moonCoords, sunCoords);
+  lunarPhaseMeasures.phaseDecimal = Ephemeris::getLunarPhaseDecimal(moonCoords, sunCoords);
+
+  // lunarPhaseMeasures.phaseDecimal = Ephemeris::getLunarPhaseDecimalLowerAccuracy(day, month, year, hours, minutes, seconds);
 
   return lunarPhaseMeasures;
 };
 
-FLOAT Ephemeris::getLunarIllumination(unsigned int day, unsigned int month, unsigned int year,
-                                      unsigned int hours, unsigned int minutes, unsigned int seconds)
+FLOAT Ephemeris::getLunarIllumination(HeliocentricCoordinates moonCoords, HeliocentricCoordinates sunCoords)
 {
 
   /* 
@@ -191,13 +198,6 @@ FLOAT Ephemeris::getLunarIllumination(unsigned int day, unsigned int month, unsi
                         / 2
 
  */
-
-  JulianDay jd = Calendar::julianDayForDateAndTime(day, month, year, hours, minutes, seconds);
-  FLOAT T = T_WITH_JD(jd.day, jd.time);
-
-  HeliocentricCoordinates sunHCoords = Ephemeris::heliocentricCoordinatesForSun(T);
-  HeliocentricCoordinates moonHCoords = Ephemeris::heliocentricCoordinatesForEarthsMoon(T);
-
   // 48.2 -- w earth lat/lng
   // FLOAT geocentricElongation = acos(
   //     (sin(sunECoords.dec) * sin(moonECoords.dec)) +
@@ -205,14 +205,14 @@ FLOAT Ephemeris::getLunarIllumination(unsigned int day, unsigned int month, unsi
 
   // 48.2 -- alt
   FLOAT geocentricElongation = ACOSD(
-      COSD(moonHCoords.lat) *
-      COSD(moonHCoords.lon - sunHCoords.lon));
+      COSD(moonCoords.lat) *
+      COSD(moonCoords.lon - sunCoords.lon));
 
   geocentricElongation = LIMIT_DEGREES_TO_180(geocentricElongation);
 
   FLOAT phaseAngle = ATAND(
-      (sunHCoords.earthDistanceKm * SIND(geocentricElongation)) /
-      (moonHCoords.earthDistanceKm - (sunHCoords.earthDistanceKm * COSD(geocentricElongation))));
+      (sunCoords.earthDistanceKm * SIND(geocentricElongation)) /
+      (moonCoords.earthDistanceKm - (sunCoords.earthDistanceKm * COSD(geocentricElongation))));
 
   phaseAngle = LIMIT_DEGREES_TO_180(phaseAngle);
 
@@ -284,8 +284,18 @@ FLOAT Ephemeris::getLunarIlluminationLowerAccuracy(unsigned int day, unsigned in
   return illuminatedFraction;
 }
 
-FLOAT Ephemeris::getLunarPhaseDecimalLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
-                                                   unsigned int hours, unsigned int minutes, unsigned int seconds)
+double Ephemeris::getLunarPhaseDecimal(HeliocentricCoordinates moonCoords, HeliocentricCoordinates sunCoords)
+{
+  // Astronomical Algorithims (2015) Jean Meeus - Ch 49 pg 349.
+  // get difference in longitude between moon - sun
+  double phaseDecimal = LIMIT_DEGREES_TO_360(moonCoords.lon - sunCoords.lon);
+  phaseDecimal = phaseDecimal / 360;
+
+  return phaseDecimal;
+};
+
+double Ephemeris::getLunarPhaseDecimalLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
+                                                    unsigned int hours, unsigned int minutes, unsigned int seconds)
 {
   /*
     Astronomical Algorithims (2015) - Jean Meeus - figure 49.2
