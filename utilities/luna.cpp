@@ -2,7 +2,7 @@
 #include <math.h>
 
 #if !DISABLE_PLANETS
-HeliocentricCoordinates Ephemeris::heliocentricCoordinatesForEarthsMoon(FLOAT T)
+GeocentricCoordinates Ephemeris::geocentricCoordinatesForEarthsMoon(FLOAT T)
 {
   /*
     Astronomical Algorithims by Jean Meeus - 2015 - CH 47 - Position of the Moon.
@@ -68,7 +68,7 @@ HeliocentricCoordinates Ephemeris::heliocentricCoordinatesForEarthsMoon(FLOAT T)
   // std::cout << std::to_string(SUM_DIST) << std::endl;
   // std::cout << std::to_string(SUM_LAT) << std::endl;
 
-  HeliocentricCoordinates coords;
+  GeocentricCoordinates coords;
 
   FLOAT nutationLon = 0.00461;                                                 // nutation in degrees
   coords.lon = LIMIT_DEGREES_TO_360((L1 + (SUM_LON / 1000000)) + nutationLon); // degrees
@@ -165,8 +165,8 @@ LunarPhaseMeasures Ephemeris::getLunarPhaseMeasures(unsigned int day, unsigned i
   JulianDay jd = Calendar::julianDayForDateAndTime(day, month, year, hours, minutes, seconds);
   FLOAT T = T_WITH_JD(jd.day, jd.time);
 
-  HeliocentricCoordinates moonCoords = Ephemeris::heliocentricCoordinatesForEarthsMoon(T);
-  HeliocentricCoordinates sunCoords = Ephemeris::heliocentricCoordinatesForSun(T);
+  GeocentricCoordinates moonCoords = Ephemeris::geocentricCoordinatesForEarthsMoon(T);
+  GeocentricCoordinates sunCoords = Ephemeris::geocentricCoordinatesForSun(T);
 
   lunarPhaseMeasures.illuminatedFraction = Ephemeris::getLunarIllumination(moonCoords, sunCoords);
   lunarPhaseMeasures.phaseDecimal = Ephemeris::getLunarPhaseDecimal(moonCoords, sunCoords);
@@ -176,7 +176,7 @@ LunarPhaseMeasures Ephemeris::getLunarPhaseMeasures(unsigned int day, unsigned i
   return lunarPhaseMeasures;
 };
 
-FLOAT Ephemeris::getLunarIllumination(HeliocentricCoordinates moonCoords, HeliocentricCoordinates sunCoords)
+FLOAT Ephemeris::getLunarIllumination(GeocentricCoordinates moonCoords, GeocentricCoordinates sunCoords)
 {
 
   /* 
@@ -284,7 +284,7 @@ FLOAT Ephemeris::getLunarIlluminationLowerAccuracy(unsigned int day, unsigned in
   return illuminatedFraction;
 }
 
-double Ephemeris::getLunarPhaseDecimal(HeliocentricCoordinates moonCoords, HeliocentricCoordinates sunCoords)
+double Ephemeris::getLunarPhaseDecimal(GeocentricCoordinates moonCoords, GeocentricCoordinates sunCoords)
 {
   // Astronomical Algorithims (2015) Jean Meeus - Ch 49 pg 349.
   // get difference in longitude between moon - sun

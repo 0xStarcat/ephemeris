@@ -69,7 +69,5 @@ int main()
   std::cout << "IF: " << std::to_string(lpm.illuminatedFraction) << "\n";
   std::cout << "PD: " << std::to_string(lpm.phaseDecimal) << "\n";
 
-  std::cout << std::to_string(moonLongitudeELP[0].coefficient);
-
   return 0;
 }

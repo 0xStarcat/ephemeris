@@ -2,7 +2,7 @@
 #include <math.h>
 
 #if !DISABLE_PLANETS
-HeliocentricCoordinates Ephemeris::heliocentricCoordinatesForSun(FLOAT T)
+GeocentricCoordinates Ephemeris::geocentricCoordinatesForSun(FLOAT T)
 {
   /*
       Astronomical Algorithims by Jean Meeus - 2015 - CH 25 - Solar Coordinates.
@@ -47,11 +47,10 @@ HeliocentricCoordinates Ephemeris::heliocentricCoordinatesForSun(FLOAT T)
   // radius vector
   FLOAT R = (1.000001018 * (1 - pow(e, 2)) / (1 + (e * COSD(v))));
 
-  HeliocentricCoordinates coords;
+  GeocentricCoordinates coords;
 
   coords.lon = sunApparentLongitude;
-  coords.lat = 0; // SUN apparent lat is always ~ 0;
-  coords.radius = R;
+  coords.lat = 0;                          // SUN apparent lat is always ~ 0;
   coords.earthDistanceKm = R / 6.68459e-9; // convert AU to KM;
 
   return coords;

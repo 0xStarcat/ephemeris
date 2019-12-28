@@ -121,6 +121,9 @@ struct GeocentricCoordinates
 
   /*! Floating value for latitude.*/
   FLOAT lat;
+
+  /* ! distance in KM to the earth */
+  FLOAT earthDistanceKm;
 };
 
 /*! This structure describes rectangular coordinates. */
@@ -292,12 +295,12 @@ public:
                                                                          unsigned int day, unsigned int month, unsigned int year,
                                                                          unsigned int hours, unsigned int minutes, unsigned int seconds);
 
-  static FLOAT getLunarIllumination(HeliocentricCoordinates moonCoords, HeliocentricCoordinates sunCoords);
+  static FLOAT getLunarIllumination(GeocentricCoordinates moonCoords, GeocentricCoordinates sunCoords);
 
   static FLOAT getLunarIlluminationLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
                                                  unsigned int hours, unsigned int minutes, unsigned int seconds);
 
-  static double getLunarPhaseDecimal(HeliocentricCoordinates moonCoords, HeliocentricCoordinates sunCoords);
+  static double getLunarPhaseDecimal(GeocentricCoordinates moonCoords, GeocentricCoordinates sunCoords);
 
   static double getLunarPhaseDecimalLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
                                                   unsigned int hours, unsigned int minutes, unsigned int seconds);
@@ -323,12 +326,12 @@ private:
   /* ! Compute sun's heliocentric coordnates.
     * Reference: Astrological Algorithims (2015) ch 25
   */
-  static HeliocentricCoordinates heliocentricCoordinatesForSun(FLOAT T);
+  static GeocentricCoordinates geocentricCoordinatesForSun(FLOAT T);
 
   /* ! Compute earthMoon's heliocentric coordnates.
     * Reference: Astrological Algorithims (2015) ch 47
   */
-  static HeliocentricCoordinates heliocentricCoordinatesForEarthsMoon(FLOAT T);
+  static GeocentricCoordinates geocentricCoordinatesForEarthsMoon(FLOAT T);
 
   /*! Compute heliocentric coordinates.
      *  Reference: Chapter 22, page 83: Position des planètes. */
